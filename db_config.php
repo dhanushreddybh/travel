@@ -1,12 +1,21 @@
 <?php
-$host = getenv("MYSQL_HOST");
-$user = getenv("MYSQL_USER");
-$password = getenv("MYSQL_PASSWORD");
-$database = getenv("MYSQL_DATABASE");
+$host = getenv('MYSQLHOST') ?: 'localhost';
+$port = getenv('MYSQLPORT') ?: '3306';
+$database = getenv('MYSQLDATABASE') ?: 'railway';
+$username = getenv('MYSQLUSER') ?: 'root';
+$password = getenv('MYSQLPASSWORD') ?: '';
 
-$conn = new mysqli($host, $user, $password, $database);
+// Create connection with port
+$conn = new mysqli($host, $username, $password, $database, $port);
 
+// Check connection
 if ($conn->connect_error) {
-    die("Database connection failed");
+    die(json_encode([
+        "success" => false,
+        "message" => "Database connection failed: " . $conn->connect_error
+    ]));
 }
+
+// Set charset to utf8
+$conn->set_charset("utf8mb4");
 ?>

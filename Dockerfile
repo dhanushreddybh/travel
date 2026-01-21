@@ -1,31 +1,22 @@
 FROM php:8.2-apache
 
+# Set Apache document root explicitly
+ENV APACHE_DOCUMENT_ROOT=/var/www/html
+
+# Update Apache config to use the new document root
+RUN sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# Disable conflicting MPMs (prefork already enabled in php image)
+RUN a2dismod mpm_event mpm_worker || true
+
+# Ensure index files are recognised
+RUN echo "DirectoryIndex index.php index.html" >> /etc/apache2/apache2.conf
+
 # Install MySQL extensions
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Create a custom entrypoint script that forcefully fixes MPM issues
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-echo "Fixing Apache MPM configuration..."\n\
-\n\
-# Remove all MPM module symlinks\n\
-rm -f /etc/apache2/mods-enabled/mpm_*.conf\n\
-rm -f /etc/apache2/mods-enabled/mpm_*.load\n\
-\n\
-# Enable only mpm_prefork\n\
-ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf\n\
-ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load\n\
-\n\
-echo "MPM configuration fixed. Starting Apache..."\n\
-\n\
-# Start Apache in foreground\n\
-exec apache2-foreground "$@"' > /usr/local/bin/custom-entrypoint.sh
-
-# Make the script executable
-RUN chmod +x /usr/local/bin/custom-entrypoint.sh
-
-# Copy project files
+# Copy application files
 COPY . /var/www/html/
 
 # Fix permissions
@@ -33,6 +24,3 @@ RUN chown -R www-data:www-data /var/www/html
 
 # Expose HTTP port
 EXPOSE 80
-
-# Use custom entrypoint
-ENTRYPOINT ["/usr/local/bin/custom-entrypoint.sh"]

@@ -7,8 +7,8 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html
 RUN sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
     && sed -ri 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Ensure index files are recognised
-RUN echo "DirectoryIndex index.php index.html" >> /etc/apache2/apache2.conf
+# Set DirectoryIndex to prioritize login.php
+RUN echo "DirectoryIndex login.php index.php index.html" >> /etc/apache2/apache2.conf
 
 # Install MySQL extensions
 RUN docker-php-ext-install mysqli pdo pdo_mysql

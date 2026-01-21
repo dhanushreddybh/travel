@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - WanderLust Travel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand, .nav-link {
+            color: white !important;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            opacity: 0.3;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .badge-status {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .btn-logout {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+        }
+
+        .btn-logout:hover {
+            background: #c82333;
+            color: white;
+        }
+
+        .btn-home {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-right: 10px;
+        }
+
+        .btn-home:hover {
+            background: #f8f9fa;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .table-responsive {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .table thead {
+            position: sticky;
+            top: 0;
+            background: #667eea;
+            color: white;
+            z-index: 10;
+        }
+
+        .table thead th {
+            border: none;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-tachometer-alt"></i> WanderLust Travel - Admin Dashboard
+            </a>
+            <div class="ms-auto">
+                <button class="btn btn-home" onclick="goHome()">
+                    <i class="fas fa-home"></i> Home
+                </button>
+                <span class="navbar-text me-3" id="adminName">Welcome, Admin</span>
+                <button class="btn btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Statistics Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-ticket-alt stat-icon float-end"></i>
+                    <h6 class="text-muted">Total Bookings</h6>
+                    <div class="stat-value" id="totalBookings">0</div>
+                    <small class="text-muted">All time bookings</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-rupee-sign stat-icon float-end"></i>
+                    <h6 class="text-muted">Total Revenue</h6>
+                    <div class="stat-value" id="totalRevenue">₹0</div>
+                    <small class="text-muted">Total earnings</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-users stat-icon float-end"></i>
+                    <h6 class="text-muted">Total Travelers</h6>
+                    <div class="stat-value" id="totalTravelers">0</div>
+                    <small class="text-muted">People traveled</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-calendar-day stat-icon float-end"></i>
+                    <h6 class="text-muted">Today's Bookings</h6>
+                    <div class="stat-value" id="todayBookings">0</div>
+                    <small class="text-muted">Bookings today</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bookings Table -->
+        <div class="table-container mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4><i class="fas fa-list"></i> All Bookings</h4>
+                <button class="btn btn-primary" onclick="loadBookings()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+
+            <div class="search-box">
+                <input type="text" class="form-control" id="searchInput" 
+                       placeholder="🔍 Search by Booking ID, Name, Email, Phone, or Destination..." 
+                       onkeyup="searchBookings()">
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Date</th>
+                            <th>Customer Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Destination</th>
+                            <th>Travelers</th>
+                            <th>Amount</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsTable">
+                        <tr>
+                            <td colspan="10" class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Loading bookings...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3 text-muted">
+                <small>Total Records: <strong id="totalRecords">0</strong></small>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let allBookings = [];
+
+        // Check if user is logged in as admin
+        async function checkAuth() {
+            try {
+                const response = await fetch('check_session.php');
+                const result = await response.json();
+                
+                if (!result.logged_in || result.user.user_type !== 'admin') {
+                    alert('Access Denied! Admin login required.');
+                    window.location.href = 'login.html';
+                    return false;
+                }
+                
+                document.getElementById('adminName').textContent = 
+                    `Welcome, ${result.user.full_name}`;
+                return true;
+            } catch (error) {
+                console.error('Auth error:', error);
+                window.location.href = 'login.html';
+                return false;
+            }
+        }
+
+        // Load bookings
+        async function loadBookings() {
+            try {
+                const response = await fetch('admin_bookings.php');
+                const result = await response.json();
+                
+                if (result.success) {
+                    allBookings = result.bookings;
+                    displayBookings(allBookings);
+                    updateStats(result.stats);
+                    document.getElementById('totalRecords').textContent = allBookings.length;
+                } else {
+                    document.getElementById('bookingsTable').innerHTML = 
+                        '<tr><td colspan="10" class="text-center text-danger">Failed to load bookings: ' + result.message + '</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('bookingsTable').innerHTML = 
+                    '<tr><td colspan="10" class="text-center text-danger"><i class="fas fa-exclamation-triangle"></i> Error loading bookings. Please check your connection.</td></tr>';
+            }
+        }
+
+        // Display bookings in table
+        function displayBookings(bookings) {
+            const tbody = document.getElementById('bookingsTable');
+            
+            if (bookings.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center"><i class="fas fa-inbox"></i> No bookings found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = bookings.map(booking => `
+                <tr>
+                    <td><strong class="text-primary">${booking.booking_id}</strong></td>
+                    <td>${new Date(booking.booking_date).toLocaleDateString('en-IN')}<br>
+                        <small class="text-muted">${new Date(booking.booking_date).toLocaleTimeString('en-IN', {hour: '2-digit', minute: '2-digit'})}</small>
+                    </td>
+                    <td>${booking.full_name}</td>
+                    <td><small>${booking.email}</small></td>
+                    <td>${booking.phone}</td>
+                    <td><span class="badge bg-info">${booking.destination}</span></td>
+                    <td><i class="fas fa-users"></i> ${booking.num_travelers}</td>
+                    <td><strong class="text-success">₹${parseFloat(booking.total_amount).toLocaleString('en-IN')}</strong></td>
+                    <td><span class="badge bg-secondary">${booking.payment_method}</span></td>
+                    <td><span class="badge badge-status bg-success">${booking.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // Update statistics
+        function updateStats(stats) {
+            if (stats) {
+                document.getElementById('totalBookings').textContent = stats.total_bookings || 0;
+                document.getElementById('totalRevenue').textContent = 
+                    '₹' + (parseFloat(stats.total_revenue || 0).toLocaleString('en-IN'));
+                document.getElementById('totalTravelers').textContent = stats.total_travelers || 0;
+                document.getElementById('todayBookings').textContent = stats.today_bookings || 0;
+            }
+        }
+
+        // Search bookings
+        function searchBookings() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filtered = allBookings.filter(booking => 
+                booking.booking_id.toLowerCase().includes(searchTerm) ||
+                booking.full_name.toLowerCase().includes(searchTerm) ||
+                booking.email.toLowerCase().includes(searchTerm) ||
+                booking.phone.includes(searchTerm) ||
+                booking.destination.toLowerCase().includes(searchTerm)
+            );
+            
+            displayBookings(filtered);
+            document.getElementById('totalRecords').textContent = filtered.length;
+        }
+
+        // Go to home page
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        // Logout
+        async function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    await fetch('logout.php');
+                    window.location.href = 'login.html';
+                } catch (error) {
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+
+        // Initialize on page load
+        window.onload = async function() {
+            const isAuth = await checkAuth();
+            if (isAuth) {
+                loadBookings();
+                // Auto-refresh every 30 seconds
+                setInterval(loadBookings, 30000);
+            }
+        };
+    </script>
+</body>
+</html>
